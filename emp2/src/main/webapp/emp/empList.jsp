@@ -56,6 +56,13 @@
 	
 	System.out.println("debug sort & noSort : "+sort+","+noSort);
 	
+	//검색 단어 확인
+	String word = null;
+	if(request.getParameter("word") != null && !request.getParameter("word").equals("") && !request.getParameter("word").equals("null")) {
+		word = request.getParameter("word");
+	}
+	System.out.println("debug word : "+word);
+	
 	
 	//2) Model
 
@@ -71,8 +78,18 @@
 	
 	
 /***********************************************페이징***************************************/
-	String cntSql = "SELECT COUNT(*) cnt From employees";
-	PreparedStatement cntStmt = conn.prepareStatement(cntSql);
+	String cntSql = null;
+	PreparedStatement cntStmt = null;
+	
+	if(word == null) {
+		cntSql = "SELECT COUNT(*) cnt From employees";
+		cntStmt = conn.prepareStatement(cntSql);
+	} else {
+		cntSql = "SELECT COUNT(*) cnt From employees WHERE CONCAT(first_name,' ',last_name) LIKE ?";
+		cntStmt = conn.prepareStatement(cntSql);
+		cntStmt.setString(1,"%"+word+"%");
+	}
+
 	ResultSet cntRs = cntStmt.executeQuery();
 	int cnt = 0;
 	if(cntRs.next()){
@@ -109,28 +126,62 @@
 /**********************************************************************************************/
 	//List 출력
 	String sql = null;
+	PreparedStatement stmt = null;
 	
-	if(noSort.equals("DESC")) {
-		sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY emp_no DESC LIMIT ?, ?";
+	if(word == null) {
+		if(noSort.equals("DESC")) {
+			sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY emp_no DESC LIMIT ?, ?";
+			if(sort.equals("DESC")) {
+				sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY CONCAT(first_name,' ',last_name) DESC, emp_no DESC LIMIT ?, ?";
+			} else if(sort.equals("ASC")){
+				sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY CONCAT(first_name,' ',last_name), emp_no DESC LIMIT ?, ?";
+			}
+			
+			stmt = conn.prepareStatement(sql);
+			stmt.setInt(1, beginRow);
+			stmt.setInt(2, ROW_PER_PAGE);
 	
-		if(sort.equals("DESC")) {
-			sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY CONCAT(first_name,' ',last_name) DESC, emp_no DESC LIMIT ?, ?";
-		} else if(sort.equals("ASC")){
-			sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY CONCAT(first_name,' ',last_name), emp_no DESC LIMIT ?, ?";
+		} else {
+			sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY emp_no ASC LIMIT ?, ?";
+			if(sort.equals("DESC")) {
+				sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY CONCAT(first_name,' ',last_name) DESC, emp_no ASC LIMIT ?, ?";
+			} else if(sort.equals("ASC")){
+				sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY CONCAT(first_name,' ',last_name), emp_no ASC LIMIT ?, ?";
+			}
+			
+			stmt = conn.prepareStatement(sql);
+			stmt.setInt(1, beginRow);
+			stmt.setInt(2, ROW_PER_PAGE);
 		}
-
 	} else {
-		sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY emp_no ASC LIMIT ?, ?";
-		if(sort.equals("DESC")) {
-			sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY CONCAT(first_name,' ',last_name) DESC, emp_no ASC LIMIT ?, ?";
-		} else if(sort.equals("ASC")){
-			sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY CONCAT(first_name,' ',last_name), emp_no ASC LIMIT ?, ?";
-		}
-	} 
+		if(noSort.equals("DESC")) {
+			sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees WHERE CONCAT(first_name,' ',last_name) LIKE ? ORDER BY emp_no DESC LIMIT ?, ?";
+			if(sort.equals("DESC")) {
+				sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees WHERE CONCAT(first_name,' ',last_name) LIKE ? ORDER BY CONCAT(first_name,' ',last_name) DESC, emp_no DESC LIMIT ?, ?";
+			} else if(sort.equals("ASC")){
+				sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees WHERE CONCAT(first_name,' ',last_name) LIKE ? ORDER BY CONCAT(first_name,' ',last_name), emp_no DESC LIMIT ?, ?";
+			}
+			
+			stmt = conn.prepareStatement(sql);
+			stmt.setString(1,"%"+word+"%");
+			stmt.setInt(2, beginRow);
+			stmt.setInt(3, ROW_PER_PAGE);
 	
-	PreparedStatement stmt = conn.prepareStatement(sql);
-	stmt.setInt(1, beginRow);
-	stmt.setInt(2, ROW_PER_PAGE);
+		} else {
+			sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees WHERE CONCAT(first_name,' ',last_name) LIKE ? ORDER BY emp_no ASC LIMIT ?, ?";
+			if(sort.equals("DESC")) {
+				sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees WHERE CONCAT(first_name,' ',last_name) LIKE ? ORDER BY CONCAT(first_name,' ',last_name) DESC, emp_no ASC LIMIT ?, ?";
+			} else if(sort.equals("ASC")){
+				sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees WHERE CONCAT(first_name,' ',last_name) LIKE ? ORDER BY CONCAT(first_name,' ',last_name), emp_no ASC LIMIT ?, ?";
+			}
+			
+			stmt = conn.prepareStatement(sql);
+			stmt.setString(1,"%"+word+"%");
+			stmt.setInt(2, beginRow);
+			stmt.setInt(3, ROW_PER_PAGE);
+		}
+	}
+
 
 	ResultSet rs = stmt.executeQuery();
 	
@@ -181,11 +232,11 @@
 							<%
 								if(noSort.equals("ASC")) {
 							%>
-									<a href="<%=request.getContextPath()%>/emp/empList.jsp?&currentPage=<%=currentPage%>&sort=<%=sort %>&noSort=DESC"> [내림차순]</a>
+									<a href="<%=request.getContextPath()%>/emp/empList.jsp?&currentPage=<%=currentPage%>&sort=<%=sort %>&noSort=DESC&word=<%=word%>"> [내림차순]</a>
 							<%
 								} else {
 							%>
-									<a href="<%=request.getContextPath()%>/emp/empList.jsp?&currentPage=<%=currentPage%>&sort=<%=sort %>&noSort=ASC"> [오름차순]</a>
+									<a href="<%=request.getContextPath()%>/emp/empList.jsp?&currentPage=<%=currentPage%>&sort=<%=sort %>&noSort=ASC&word=<%=word%>"> [오름차순]</a>
 							<%
 								}
 							%>
@@ -195,11 +246,11 @@
 							<%
 								if(sort.equals("ASC")) {
 							%>
-									<a href="<%=request.getContextPath()%>/emp/empList.jsp?&currentPage=<%=currentPage%>&sort=DESC&noSort=<%=noSort%>"> [내림차순]</a>
+									<a href="<%=request.getContextPath()%>/emp/empList.jsp?&currentPage=<%=currentPage%>&sort=DESC&noSort=<%=noSort%>&word=<%=word%>"> [내림차순]</a>
 							<%
 								} else {
 							%>
-									<a href="<%=request.getContextPath()%>/emp/empList.jsp?&currentPage=<%=currentPage%>&sort=ASC&noSort=<%=noSort%>"> [오름차순]</a>
+									<a href="<%=request.getContextPath()%>/emp/empList.jsp?&currentPage=<%=currentPage%>&sort=ASC&noSort=<%=noSort%>&word=<%=word%>"> [오름차순]</a>
 							<%
 								}
 							%>
@@ -227,224 +278,50 @@
 			
 			<div class="d-flex justify-content-between">
 			
-				<%
-					if(noSort.equals("ASC")) {
-						if(sort.equals("ASC")){
-				%>
-							<div>
-								<a href="<%=request.getContextPath()%>/index.jsp" class="btn btn-dark text-white text-end">Insert</a>
-							</div>
-							
-							<!-- paging code -->
-							<div class="text-center">
-								<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=1&sort=ASC&noSort=ASC">처음</a>
-								<%
-									if(currentPage>1) {
-								%>
-										<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=currentPage-1%>&sort=ASC&noSort=ASC">이전</a>
-								<%
-									}
-								%>
-								<span style="text-align:center" class="text-center"><%=currentPage %> / <%=lastPage %></span>
-								<%
-									if(currentPage<lastPage) {
-								%>
-										<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=currentPage+1%>&sort=ASC&noSort=ASC">다음</a>
-								<%		
-									}
-								%>
-								<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=lastPage%>&sort=ASC&noSort=ASC">끝</a>
-							</div>
-							
-							<div>
-								<a href="<%=request.getContextPath()%>/index.jsp" class="btn btn-dark text-white text-end">Back</a>
-							</div>
-					<%
-						} else if(sort.equals("DESC")){
-					%>
-							<div>
-								<a href="<%=request.getContextPath()%>/index.jsp" class="btn btn-dark text-white text-end">Insert</a>
-							</div>
-							
-							<div class="text-center">
-								<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=1&sort=DESC&noSort=ASC">처음</a>
-								<%
-									if(currentPage>1) {
-								%>
-										<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=currentPage-1%>&sort=DESC&noSort=ASC">이전</a>
-								<%
-									}
-								%>
-								<span style="text-align:center" class="text-center"><%=currentPage %> / <%=lastPage %></span>
-								<%
-									if(currentPage<lastPage) {
-								%>
-										<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=currentPage+1%>&sort=DESC&noSort=ASC">다음</a>
-								<%		
-									}
-								%>
-								<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=lastPage%>&sort=DESC&noSort=ASC">끝</a>
-							</div>
-							
-							<div class="text-end">
-								<a href="<%=request.getContextPath()%>/index.jsp" class="btn btn-dark text-white text-end">Back</a>
-							</div>	
-				<%		
-						} else {
-				%>
-							<div>
-								<a href="<%=request.getContextPath()%>/index.jsp" class="btn btn-dark text-white text-end">Insert</a>
-							</div>
-							
-							<!-- paging code -->
-							<div class="text-center">
-								<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=1&noSort=ASC">처음</a>
-								<%
-									if(currentPage>1) {
-								%>
-										<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=currentPage-1%>&noSort=ASC">이전</a>
-								<%
-									}
-								%>
-								<span style="text-align:center" class="text-center"><%=currentPage %> / <%=lastPage %></span>
-								<%
-									if(currentPage<lastPage) {
-								%>
-										<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=currentPage+1%>&noSort=ASC">다음</a>
-								<%		
-									}
-								%>
-								<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=lastPage%>&noSort=ASC">끝</a>
-							</div>
-							
-							<div>
-								<a href="<%=request.getContextPath()%>/index.jsp" class="btn btn-dark text-white text-end">Back</a>
-							</div>
+				<div>
+					<a href="<%=request.getContextPath()%>/index.jsp" class="btn btn-dark text-white text-end">Insert</a>
+				</div>
 				
-				<%
+				<!-- paging code -->
+				<div class="text-center">
+					<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=1&sort=<%=sort %>&noSort=<%=noSort%>&word=<%=word%>">처음</a>
+					<%
+						if(currentPage>1) {
+					%>
+							<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=currentPage-1%>&sort=<%=sort %>&noSort=<%=noSort%>&word=<%=word%>">이전</a>
+					<%
 						}
-					} else {	
-						if(sort.equals("ASC")){
-				%>
-							<div>
-								<a href="<%=request.getContextPath()%>/index.jsp" class="btn btn-dark text-white text-end">Insert</a>
-							</div>
-							
-							<!-- paging code -->
-							<div class="text-center">
-								<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=1&sort=ASC&noSort=DESC">처음</a>
-								<%
-									if(currentPage>1) {
-								%>
-										<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=currentPage-1%>&sort=ASC&noSort=DESC">이전</a>
-								<%
-									}
-								%>
-								<span style="text-align:center" class="text-center"><%=currentPage %> / <%=lastPage %></span>
-								<%
-									if(currentPage<lastPage) {
-								%>
-										<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=currentPage+1%>&sort=ASC&noSort=DESC">다음</a>
-								<%		
-									}
-								%>
-								<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=lastPage%>&sort=ASC&noSort=DESC">끝</a>
-							</div>
-							
-							<div>
-								<a href="<%=request.getContextPath()%>/index.jsp" class="btn btn-dark text-white text-end">Back</a>
-							</div>
-				<%
-						} else if(sort.equals("DESC")){
-				%>
-							<div>
-								<a href="<%=request.getContextPath()%>/index.jsp" class="btn btn-dark text-white text-end">Insert</a>
-							</div>
-							
-							<div class="text-center">
-								<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=1&sort=DESC&noSort=DESC">처음</a>
-								<%
-									if(currentPage>1) {
-								%>
-										<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=currentPage-1%>&sort=DESC&noSort=DESC">이전</a>
-								<%
-									}
-								%>
-								<span style="text-align:center" class="text-center"><%=currentPage %> / <%=lastPage %></span>
-								<%
-									if(currentPage<lastPage) {
-								%>
-										<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=currentPage+1%>&sort=DESC&noSort=DESC">다음</a>
-								<%		
-									}
-								%>
-								<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=lastPage%>&sort=DESC&noSort=DESC">끝</a>
-							</div>
-							
-							<div class="text-end">
-								<a href="<%=request.getContextPath()%>/index.jsp" class="btn btn-dark text-white text-end">Back</a>
-							</div>
-							
-				<%		
-						} else {
-				%>
-						<div>
-							<a href="<%=request.getContextPath()%>/index.jsp" class="btn btn-dark text-white text-end">Insert</a>
-						</div>
-						
-						<!-- paging code -->
-						<div class="text-center">
-							<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=1&noSort=DESC">처음</a>
-							<%
-								if(currentPage>1) {
-							%>
-									<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=currentPage-1%>&noSort=DESC">이전</a>
-							<%
-								}
-							%>
-							<span style="text-align:center" class="text-center"><%=currentPage %> / <%=lastPage %></span>
-							<%
-								if(currentPage<lastPage) {
-							%>
-									<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=currentPage+1%>&noSort=DESC">다음</a>
-							<%		
-								}
-							%>
-							<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=lastPage%>&noSort=DESC">끝</a>
-						</div>
-						
-						<div>
-							<a href="<%=request.getContextPath()%>/index.jsp" class="btn btn-dark text-white text-end">Back</a>
-						</div>
-				<%			
+					%>
+					<span style="text-align:center" class="text-center"><%=currentPage %> / <%=lastPage %></span>
+					<%
+						if(currentPage<lastPage) {
+					%>
+							<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=currentPage+1%>&sort=<%=sort %>&noSort=<%=noSort%>&word=<%=word%>">다음</a>
+					<%		
 						}
-					}
-				%>
-					
+					%>
+					<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=lastPage%>&sort=<%=sort %>&noSort=<%=noSort%>&word=<%=word%>">끝</a>
+				</div>
+				
+				<div>
+					<a href="<%=request.getContextPath()%>/index.jsp" class="btn btn-dark text-white text-end">Back</a>
+				</div>
 			</div>
-			
-			
+				
 			<br>
 				
 			<div class="text-center">
-				<%
-					if(sort.equals("ASC")) {
-				%>
-						<form action="<%=request.getContextPath()%>/emp/empList.jsp?&sort=ASC" method="post" class="text-center">
-							<input type="text" name="currentPage" value="" placeholder="이동하려는 page 번호" style="width:200px" class="text-center">
-							<button class="btn btn-dark" type="submit">이동</button>
-						</form>
-				<%
-					} else {
-				%>
-						<form action="<%=request.getContextPath()%>/emp/empList.jsp?&sort=DESC" method="post" class="text-center">
-							<input type="text" name="currentPage" value="" placeholder="이동하려는 page 번호" style="width:200px" class="text-center">
-							<button class="btn btn-dark" type="submit">이동</button>
-						</form>
-				<%
-					}
-				%>
-				
+				<form action="<%=request.getContextPath()%>/emp/empList.jsp?&sort=<%=sort%>&noSort=<%=noSort %>" method="post" class="text-center">
+					<input type="text" name="currentPage" value="" placeholder="이동하려는 page 번호" style="width:200px" class="text-center">
+					<button class="btn btn-dark" type="submit">이동</button>
+				</form>
+			</div>
+			
+			<div class="text-center">
+				<form action="<%=request.getContextPath()%>/emp/empList.jsp?&sort=<%=sort%>&noSort=<%=noSort%>" method="post" class="text-center">
+					<input type="text" name="word" value="" placeholder="검색 단어" style="width:200px" class="text-center" id="word">
+					<button class="btn btn-dark" type="submit">검색</button>
+				</form>
 			</div>
 			
 		</div>
