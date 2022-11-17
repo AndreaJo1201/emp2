@@ -4,7 +4,7 @@
 
 <% // session 유효성 검증 코드
 	if(session.getAttribute("loginEmpNo") != null) {
-		response.sendRedirect(request.getContextPath()+"/empList.jsp");
+		response.sendRedirect(request.getContextPath()+"/emp/empList.jsp");
 		return;
 	}
 %>

@@ -5,5 +5,5 @@
 <%
 	session.invalidate();
 	String msg = "로그아웃";
-	response.sendRedirect(request.getContextPath()+"/loginForm.jsp?&msg="+URLEncoder.encode(msg,"UTF-8"));
+	response.sendRedirect(request.getContextPath()+"/login/loginForm.jsp?&msg="+URLEncoder.encode(msg,"UTF-8"));
 %>
