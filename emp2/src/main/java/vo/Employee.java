@@ -31,7 +31,14 @@ public class Employee {
 	private String hireDate;
 	private String firstName;
 	private String lastName;
+	private String name;
 	
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
 	public String getLastName() {
 		return lastName;
 	}

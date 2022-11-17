@@ -48,7 +48,7 @@
 		WHERE emp_no = ? AND first_name = ? AND last_name = ?
 	
 	*/
-	String sql = "SELECT emp_no empNo, last_name lastName FROM employees WHERE emp_no = ? AND first_name = ? AND last_name = ?";
+	String sql = "SELECT emp_no empNo, CONCAT(first_name,' ',last_name) name FROM employees WHERE emp_no = ? AND first_name = ? AND last_name = ?";
 	PreparedStatement stmt = conn.prepareStatement(sql);
 	stmt.setInt(1, employee.getEmpNo());
 	stmt.setString(2, employee.getFirstName());
@@ -62,9 +62,9 @@
 		//로그인 성공
 		Employee loginEmp = new Employee();
 		loginEmp.setEmpNo(rs.getInt("empNo"));
-		loginEmp.setLastName(rs.getString("lastName"));
+		loginEmp.setName(rs.getString("name"));
 		
-		session.setAttribute("loginEmpNo", loginEmp); // 키 : "loginEmpNo", 값 : Object object = loginEmp;
+		session.setAttribute("loginEmp", loginEmp); // 키 : "loginEmpNo", 값 : Object object = loginEmp;
 		targetUrl = "/empList.jsp?&msg=";
 		msg = "로그인 성공";
 	}
