@@ -106,9 +106,9 @@
 	
 	if(noSort.equals("DESC")) {
 		if(sort.equals("DESC")) {
-			sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY first_name DESC AND emp_no DESC LIMIT ?, ?";
+			sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY first_name DESC, emp_no DESC LIMIT ?, ?";
 		} else {
-			sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY first_name ASC AND emp_no DESC LIMIT ?, ?";
+			sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY first_name ASC, emp_no DESC LIMIT ?, ?";
 		}
 
 	} else {
@@ -136,6 +136,7 @@
 		e.setGender(rs.getString("gender"));
 		e.setName(rs.getString("name"));
 		list.add(e);
+	}
 
 
 %>
@@ -313,9 +314,9 @@
 							<div>
 								<a href="<%=request.getContextPath()%>/index.jsp" class="btn btn-dark text-white text-end">Back</a>
 							</div>
-					<%
+				<%
 						} else {
-					%>
+				%>
 							<div>
 								<a href="<%=request.getContextPath()%>/index.jsp" class="btn btn-dark text-white text-end">사원 추가</a>
 							</div>
@@ -344,7 +345,7 @@
 								<a href="<%=request.getContextPath()%>/index.jsp" class="btn btn-dark text-white btn-lg text-end">Back</a>
 							</div>
 							
-					<%		
+				<%		
 						}
 					}
 				%>
