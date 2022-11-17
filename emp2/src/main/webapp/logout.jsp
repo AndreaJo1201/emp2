@@ -4,6 +4,6 @@
 
 <%
 	session.invalidate();
-	String msg = "로그아웃";
+	String msg = "로그아웃1";
 	response.sendRedirect(request.getContextPath()+"/loginForm.jsp?&msg="+URLEncoder.encode(msg,"UTF-8"));
 %>
