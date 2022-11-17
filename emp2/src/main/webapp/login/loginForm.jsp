@@ -21,26 +21,16 @@
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
 		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet">
-		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
-		
-		<style>
-			#verticalMidde{
-				position:absolute;
-				top: 40%;
-				left: 50%;
-				trnasfrom: translate(-50%, 50%);
-			}
-		</style>
-		
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>	
 		<title>LOGIN</title>
 	</head>
 
 	<body>
-		<div class="container text-center" id="verticalMiddle">
+		<div class="container text-center">
 			<div class="mt-4 p-5 bg-light text-dark rounded">
 				<h1>Employee LogIn</h1>
 			</div>
-			<form action="<%=request.getContextPath()%>/loginAction.jsp" class="align_middle">
+			<form action="<%=request.getContextPath()%>/login/loginAction.jsp" class="align_middle">
 				<table class="table table-sm table-borderless">
 					<tr class="text-center">
 						<td>사원번호(empNo)</td>

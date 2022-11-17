@@ -9,7 +9,7 @@
 	//session 유효성 검증 코드 후 필요하다면 sendRedirect()
 	
 	if(session.getAttribute("loginEmpNo") != null) {
-		response.sendRedirect(request.getContextPath()+"/empList.jsp");
+		response.sendRedirect(request.getContextPath()+"/index.jsp");
 		return;
 	}
 	
@@ -20,7 +20,7 @@
 		request.getParameter("lastName") == null ||
 		request.getParameter("lastName").equals("")) {
 			String msg = "로그인 정보를 입력해주세요.";
-			response.sendRedirect(request.getContextPath()+"/loginForm.jsp?&msg="+URLEncoder.encode(msg,"UTF-8"));
+			response.sendRedirect(request.getContextPath()+"/login/loginForm.jsp?&msg="+URLEncoder.encode(msg,"UTF-8"));
 			return;
 	}
 	
@@ -55,7 +55,7 @@
 	stmt.setString(3, employee.getLastName());
 	
 	ResultSet rs = stmt.executeQuery();
-	String targetUrl = "/loginForm.jsp?&msg=";
+	String targetUrl = "/login/loginForm.jsp?&msg=";
 	String msg = "로그인 실패";
 	
 	if(rs.next()) {
@@ -65,7 +65,7 @@
 		loginEmp.setName(rs.getString("name"));
 		
 		session.setAttribute("loginEmp", loginEmp); // 키 : "loginEmpNo", 값 : Object object = loginEmp;
-		targetUrl = "/empList.jsp?&msg=";
+		targetUrl = "/index.jsp?&msg=";
 		msg = "로그인 성공";
 	}
 	
