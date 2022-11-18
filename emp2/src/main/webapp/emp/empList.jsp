@@ -1,5 +1,4 @@
-<%@page import="java.util.ArrayList"%>
-<%@page import="java.net.URLEncoder"%>
+<%@page import="java.net.*"%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%request.setCharacterEncoding("UTF-8"); %>
 <%@ page import="java.sql.*" %>
@@ -32,6 +31,10 @@
 	if(request.getParameter("currentPage") != null && !request.getParameter("currentPage").equals("")) {
 		currentPage = Integer.parseInt(request.getParameter("currentPage"));
 	}
+	
+	//페이지 당 출력할 사이즈
+	final int ROW_PER_PAGE = 10;
+	
 	System.out.println("debug currentPage : "+currentPage);
 	
 	
@@ -63,108 +66,24 @@
 	}
 	System.out.println("debug word : "+word);
 	
+	/*
 	//sql 문구 캡슐화 및 정보은닉한 class
 	DbSql dbSql = new DbSql();
-	
+	*/
 	
 	//2) Model
+	EmpDao selectEmpList = new EmpDao();
+	ArrayList<Employee> list = selectEmpList.selectEmpList(currentPage, ROW_PER_PAGE, noSort, sort, word);
+	ArrayList<Paging> pageList = selectEmpList.countPageList(currentPage, ROW_PER_PAGE, word);
+	
+	
 
-	//Driver & DB connection
-	String Driver = "org.mariadb.jdbc.Driver";
-	Class.forName(Driver);
-	
-	String url = "jdbc:mariadb://localhost:3306/employees";
-	String user = "root";
-	String password = "java1234";
-	Connection conn = DriverManager.getConnection(url, user, password);
-	System.out.println("Driver loading & DB Connection Complete!");
-	
-	
-/***********************************************페이징***************************************/
-	String cntSql = dbSql.cntSql(word);
-	PreparedStatement cntStmt = null;
-	
-	if(word == null) {
-		cntStmt = conn.prepareStatement(cntSql);
-	} else {
-		cntStmt = conn.prepareStatement(cntSql);
-		cntStmt.setString(1,"%"+word+"%");
+	/*
+	if(list.getStringMsg() != null) {
+		out.println("<script>alert('"+paging.getStringMsg()+"');</script>");
 	}
+	*/
 
-	ResultSet cntRs = cntStmt.executeQuery();
-	int cnt = 0;
-	if(cntRs.next()){
-		cnt = cntRs.getInt("cnt");
-		if(cnt == 0) {
-			cnt = 1;
-		}
-	}
-	System.out.println("Debug countPage : "+cnt);
-	
-	cntRs.close();
-	cntStmt.close();
-	
-	final int ROW_PER_PAGE = 10;
-	
-	//lastPage 알고리즘
-	int lastPage = cnt / ROW_PER_PAGE;
-	if(cnt % ROW_PER_PAGE != 0) {
-		lastPage = lastPage + 1;
-	}
-	System.out.println("Debug lastPage : "+lastPage);
-	
-	if(currentPage > lastPage) { // 페이지를 넘어선 다른 수를 입력했을 때 예외(에러) 처리
-		String stringMsg = "존재하지 않는 페이지입니다.";
-		out.println("<script>alert('"+stringMsg+"');</script>"); // 스크립트 alert(경고메시지) 출력
-		currentPage = lastPage;
-		System.out.println("go to lastPage");
-	} else if(currentPage < 1) {
-		String stringMsg = "존재하지 않는 페이지입니다.";
-		out.println("<script>alert('"+stringMsg+"');</script>");
-		currentPage = 1;
-		System.out.println("go to firstPage");
-	}
-	
-	int beginRow = ROW_PER_PAGE * (currentPage-1); //brginRow 알고리즘
-	
-/**********************************************************************************************/
-	//List 출력
-	String sql = dbSql.sqlQuery(noSort,sort,word);
-	PreparedStatement stmt = null;
-	
-	//sql = dbSql.sqlQuery(noSort,sort,word);
-	
-	
-	if(word==null) {
-		stmt = conn.prepareStatement(sql);
-		stmt.setInt(1, beginRow);
-		stmt.setInt(2, ROW_PER_PAGE);
-	} else {
-		stmt = conn.prepareStatement(sql);
-		stmt.setString(1,"%"+word+"%");
-		stmt.setInt(2, beginRow);
-		stmt.setInt(3, ROW_PER_PAGE);
-	}
-
-
-	ResultSet rs = stmt.executeQuery();
-	
-	ArrayList<Employee> list = new ArrayList<Employee>();
-	int count = 0;
-	
-	while(rs.next()) {
-		Employee e = new Employee();
-		e.setEmpNo(rs.getInt("empNo"));
-		e.setBirthDate(rs.getString("birthDate"));
-		e.setHireDate(rs.getString("hireDate"));
-		e.setGender(rs.getString("gender"));
-		e.setName(rs.getString("name"));
-		list.add(e);
-	}
-	
-	rs.close();
-	stmt.close();
-	conn.close();
 %>
 
 <!DOCTYPE html>
@@ -260,15 +179,15 @@
 					<%
 						}
 					%>
-					<span style="text-align:center" class="text-center"><%=currentPage %> / <%=lastPage %></span>
+					<span style="text-align:center" class="text-center"><%=currentPage %> / <%=p.getLastPage()%></span>
 					<%
-						if(currentPage<lastPage) {
+						if(currentPage<paging.getLastPage()) {
 					%>
 							<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=currentPage+1%>&sort=<%=sort %>&noSort=<%=noSort%>&word=<%=word%>">다음</a>
 					<%		
 						}
 					%>
-					<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=lastPage%>&sort=<%=sort %>&noSort=<%=noSort%>&word=<%=word%>">끝</a>
+					<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=paging.getLastPage()%>&sort=<%=sort %>&noSort=<%=noSort%>&word=<%=word%>">끝</a>
 				</div>
 				
 				<div>
