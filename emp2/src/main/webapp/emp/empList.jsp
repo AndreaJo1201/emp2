@@ -63,6 +63,9 @@
 	}
 	System.out.println("debug word : "+word);
 	
+	//sql 문구 캡슐화 및 정보은닉한 class
+	DbSql dbSql = new DbSql();
+	
 	
 	//2) Model
 
@@ -78,14 +81,12 @@
 	
 	
 /***********************************************페이징***************************************/
-	String cntSql = null;
+	String cntSql = dbSql.cntSql(word);
 	PreparedStatement cntStmt = null;
 	
 	if(word == null) {
-		cntSql = "SELECT COUNT(*) cnt From employees";
 		cntStmt = conn.prepareStatement(cntSql);
 	} else {
-		cntSql = "SELECT COUNT(*) cnt From employees WHERE CONCAT(first_name,' ',last_name) LIKE ?";
 		cntStmt = conn.prepareStatement(cntSql);
 		cntStmt.setString(1,"%"+word+"%");
 	}
@@ -99,6 +100,9 @@
 		}
 	}
 	System.out.println("Debug countPage : "+cnt);
+	
+	cntRs.close();
+	cntStmt.close();
 	
 	final int ROW_PER_PAGE = 10;
 	
@@ -125,61 +129,21 @@
 	
 /**********************************************************************************************/
 	//List 출력
-	String sql = null;
+	String sql = dbSql.sqlQuery(noSort,sort,word);
 	PreparedStatement stmt = null;
 	
-	if(word == null) {
-		if(noSort.equals("DESC")) {
-			sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY emp_no DESC LIMIT ?, ?";
-			if(sort.equals("DESC")) {
-				sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY CONCAT(first_name,' ',last_name) DESC, emp_no DESC LIMIT ?, ?";
-			} else if(sort.equals("ASC")){
-				sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY CONCAT(first_name,' ',last_name), emp_no DESC LIMIT ?, ?";
-			}
-			
-			stmt = conn.prepareStatement(sql);
-			stmt.setInt(1, beginRow);
-			stmt.setInt(2, ROW_PER_PAGE);
+	//sql = dbSql.sqlQuery(noSort,sort,word);
 	
-		} else {
-			sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY emp_no ASC LIMIT ?, ?";
-			if(sort.equals("DESC")) {
-				sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY CONCAT(first_name,' ',last_name) DESC, emp_no ASC LIMIT ?, ?";
-			} else if(sort.equals("ASC")){
-				sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees ORDER BY CONCAT(first_name,' ',last_name), emp_no ASC LIMIT ?, ?";
-			}
-			
-			stmt = conn.prepareStatement(sql);
-			stmt.setInt(1, beginRow);
-			stmt.setInt(2, ROW_PER_PAGE);
-		}
+	
+	if(word==null) {
+		stmt = conn.prepareStatement(sql);
+		stmt.setInt(1, beginRow);
+		stmt.setInt(2, ROW_PER_PAGE);
 	} else {
-		if(noSort.equals("DESC")) {
-			sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees WHERE CONCAT(first_name,' ',last_name) LIKE ? ORDER BY emp_no DESC LIMIT ?, ?";
-			if(sort.equals("DESC")) {
-				sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees WHERE CONCAT(first_name,' ',last_name) LIKE ? ORDER BY CONCAT(first_name,' ',last_name) DESC, emp_no DESC LIMIT ?, ?";
-			} else if(sort.equals("ASC")){
-				sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees WHERE CONCAT(first_name,' ',last_name) LIKE ? ORDER BY CONCAT(first_name,' ',last_name), emp_no DESC LIMIT ?, ?";
-			}
-			
-			stmt = conn.prepareStatement(sql);
-			stmt.setString(1,"%"+word+"%");
-			stmt.setInt(2, beginRow);
-			stmt.setInt(3, ROW_PER_PAGE);
-	
-		} else {
-			sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees WHERE CONCAT(first_name,' ',last_name) LIKE ? ORDER BY emp_no ASC LIMIT ?, ?";
-			if(sort.equals("DESC")) {
-				sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees WHERE CONCAT(first_name,' ',last_name) LIKE ? ORDER BY CONCAT(first_name,' ',last_name) DESC, emp_no ASC LIMIT ?, ?";
-			} else if(sort.equals("ASC")){
-				sql = "SELECT emp_no empNo, birth_date birthDate, hire_date hireDate, gender gender, CONCAT(first_name,' ',last_name) name FROM employees WHERE CONCAT(first_name,' ',last_name) LIKE ? ORDER BY CONCAT(first_name,' ',last_name), emp_no ASC LIMIT ?, ?";
-			}
-			
-			stmt = conn.prepareStatement(sql);
-			stmt.setString(1,"%"+word+"%");
-			stmt.setInt(2, beginRow);
-			stmt.setInt(3, ROW_PER_PAGE);
-		}
+		stmt = conn.prepareStatement(sql);
+		stmt.setString(1,"%"+word+"%");
+		stmt.setInt(2, beginRow);
+		stmt.setInt(3, ROW_PER_PAGE);
 	}
 
 
@@ -197,8 +161,10 @@
 		e.setName(rs.getString("name"));
 		list.add(e);
 	}
-
-
+	
+	rs.close();
+	stmt.close();
+	conn.close();
 %>
 
 <!DOCTYPE html>
@@ -213,10 +179,12 @@
 	<body>
 		<div class="container">
 			
-			<div class="text-end">
+			<div class="clearfix">
 				<br>
-				<a href="<%=request.getContextPath()%>/login/logout.jsp" class="btn btn-dark">로그아웃</a>
+				<a href="<%=request.getContextPath()%>/emp/myEmpData.jsp" class="btn btn-info text-light float-start">내 정보</a>
+				<a href="<%=request.getContextPath()%>/login/logout.jsp" class="btn btn-dark float-end">로그아웃</a>
 			</div>
+			
 			<div class="mt-4 p-5 bg-light text-dark rounded">
 				<h1>EMP LIST</h1>
 			</div>
@@ -318,7 +286,7 @@
 			</div>
 			
 			<div class="text-center">
-				<form action="<%=request.getContextPath()%>/emp/empList.jsp?&sort=<%=sort%>&noSort=<%=noSort%>" method="post" class="text-center">
+				<form action="<%=request.getContextPath()%>/emp/empList.jsp?&noSort=<%=noSort%>" method="post" class="text-center">
 					<input type="text" name="word" value="" placeholder="검색 단어" style="width:200px" class="text-center" id="word">
 					<button class="btn btn-dark" type="submit">검색</button>
 				</form>
