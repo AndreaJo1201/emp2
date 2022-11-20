@@ -1,13 +1,10 @@
 package vo;
-
 import java.sql.*;
 import java.util.*;
 
-
 public class EmpDao {
 
-
-	public ArrayList<Employee> selectEmpList(int currentPage, final int ROW_PER_PAGE, String noSort, String sort, String word) throws Exception {
+	public ArrayList<Employee> selectEmpList (int currentPage, final int ROW_PER_PAGE, String noSort, String sort, String word) throws Exception {
 		ArrayList<Employee> list = new ArrayList<Employee>();
 		
 		DataBase db = new DataBase();
@@ -15,22 +12,16 @@ public class EmpDao {
 		String user = db.getUser();
 		String password = db.getPassword();
 		
-		
-		
-		
 		int beginRow = ROW_PER_PAGE * (currentPage-1);
-		
 		
 		/**************************************************************************************/
 		
 		Class.forName("org.mariadb.jdbc.Driver");
 		Connection conn = DriverManager.getConnection(url, user, password);
 		
-		/*****************************COUNT PAGE LIST******************************************/
-		DbSql dbsql = new DbSql();
-		
 		/*****************************SET PAGE LIST********************************************/
-		String sql = dbsql.sqlQuery(noSort, sort, word);
+		DbSql dbSql = new DbSql();
+		String sql = dbSql.sqlSelectList(noSort, sort, word);
 		PreparedStatement stmt = null;
 			
 		if(word == null) {
@@ -61,8 +52,8 @@ public class EmpDao {
 		return list;
 	}
 	
-	public ArrayList<Paging> countPageList(int currentPage, final int ROW_PER_PAGE, String word) throws Exception {
-		ArrayList<Paging> pageCount = new ArrayList<Paging>();
+	public Page countPageList(int currentPage, final int ROW_PER_PAGE, String word) throws Exception {
+		Page page = new Page();
 		
 		DataBase db = new DataBase();
 		String url = db.getUrl();
@@ -75,8 +66,8 @@ public class EmpDao {
 		Connection conn = DriverManager.getConnection(url, user, password);
 		
 		/*****************************COUNT PAGE LIST******************************************/
-		DbSql dbsql = new DbSql();
-		String cntSql = dbsql.cntSql(word);
+		DbSql dbSql = new DbSql();
+		String cntSql = dbSql.sqlCnt(word);
 		PreparedStatement cntStmt = null;
 		
 		if(word == null) {
@@ -111,17 +102,14 @@ public class EmpDao {
 			System.out.println("go to firstPage");
 		}
 		
-		Paging p = new Paging();
-		p.setLastPage(lastPage);
-		p.setStringMsg(stringMsg);
-		pageCount.add(p);
+		page.setLastPage(lastPage);
+		page.setStringMsg(stringMsg);
+		page.setCurrentPage(currentPage);
 		
 		cntRs.close();
 		cntStmt.close();
 		conn.close();
-		return pageCount;
 		
-		
+		return page;
 	}
-		
 }

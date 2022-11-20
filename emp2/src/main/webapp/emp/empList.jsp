@@ -7,18 +7,11 @@
 
 <%
 	//1) Controller
-
 	//session 유효성 검증 코드
-	if(session.getAttribute("loginEmp") == null) {
+	if(session.getAttribute("loginEmp") == null) { // loginEmp 세션 값이 null 일경우
 		String msg = "로그인 후 접속해주세요.";
 		response.sendRedirect(request.getContextPath()+"/login/loginForm.jsp?&msg="+URLEncoder.encode(msg,"UTF-8"));
 		return;
-	}
-	
-	//전달받은 msg 출력
-	if(request.getParameter("msg") != null) {
-		String msg = request.getParameter("msg");
-		out.println("<script>alert('"+msg+"');</script>");
 	}
 	
 	//session 값 저장
@@ -34,8 +27,7 @@
 	
 	//페이지 당 출력할 사이즈
 	final int ROW_PER_PAGE = 10;
-	
-	System.out.println("debug currentPage : "+currentPage);
+	System.out.println("debug currentPage : "+currentPage); // currentPage debug
 	
 	
 	//오름차순 내림차순 정렬 선택
@@ -56,8 +48,7 @@
 			noSort = "DESC";
 		}
 	}
-	
-	System.out.println("debug sort & noSort : "+sort+","+noSort);
+	System.out.println("debug sort & noSort : "+sort+","+noSort); // sort, noSort dubug
 	
 	//검색 단어 확인
 	String word = null;
@@ -66,24 +57,20 @@
 	}
 	System.out.println("debug word : "+word);
 	
-	/*
-	//sql 문구 캡슐화 및 정보은닉한 class
-	DbSql dbSql = new DbSql();
-	*/
-	
 	//2) Model
-	EmpDao selectEmpList = new EmpDao();
-	ArrayList<Employee> list = selectEmpList.selectEmpList(currentPage, ROW_PER_PAGE, noSort, sort, word);
-	ArrayList<Paging> pageList = selectEmpList.countPageList(currentPage, ROW_PER_PAGE, word);
+	EmpDao empDao = new EmpDao();
 	
+	Page pageCount = empDao.countPageList(currentPage, ROW_PER_PAGE, word); // page Count
 	
-
-	/*
-	if(list.getStringMsg() != null) {
-		out.println("<script>alert('"+paging.getStringMsg()+"');</script>");
+	ArrayList<Employee> list = empDao.selectEmpList(pageCount.getCurrentPage(), ROW_PER_PAGE, noSort, sort, word); // list select
+	
+	//3) view
+	if(pageCount.getStringMsg() != null) { // list model -> 잘못된 currentPage가 넘어왔을경우
+		out.println("<script>alert('"+pageCount.getStringMsg()+"');</script>");
+	} else if(request.getParameter("msg") != null) { // 다른 페이지에서 msg를 보냈서 이동했을 경우
+		String msg = request.getParameter("msg");
+		out.println("<script>alert('"+msg+"');</script>");
 	}
-	*/
-
 %>
 
 <!DOCTYPE html>
@@ -119,11 +106,11 @@
 							<%
 								if(noSort.equals("ASC")) {
 							%>
-									<a href="<%=request.getContextPath()%>/emp/empList.jsp?&currentPage=<%=currentPage%>&sort=<%=sort %>&noSort=DESC&word=<%=word%>"> [내림차순]</a>
+									<a href="<%=request.getContextPath()%>/emp/empList.jsp?&currentPage=<%=pageCount.getCurrentPage()%>&sort=<%=sort %>&noSort=DESC&word=<%=word%>"> [내림차순]</a>
 							<%
 								} else {
 							%>
-									<a href="<%=request.getContextPath()%>/emp/empList.jsp?&currentPage=<%=currentPage%>&sort=<%=sort %>&noSort=ASC&word=<%=word%>"> [오름차순]</a>
+									<a href="<%=request.getContextPath()%>/emp/empList.jsp?&currentPage=<%=pageCount.getCurrentPage()%>&sort=<%=sort %>&noSort=ASC&word=<%=word%>"> [오름차순]</a>
 							<%
 								}
 							%>
@@ -133,11 +120,11 @@
 							<%
 								if(sort.equals("ASC")) {
 							%>
-									<a href="<%=request.getContextPath()%>/emp/empList.jsp?&currentPage=<%=currentPage%>&sort=DESC&noSort=<%=noSort%>&word=<%=word%>"> [내림차순]</a>
+									<a href="<%=request.getContextPath()%>/emp/empList.jsp?&currentPage=<%=pageCount.getCurrentPage()%>&sort=DESC&noSort=<%=noSort%>&word=<%=word%>"> [내림차순]</a>
 							<%
 								} else {
 							%>
-									<a href="<%=request.getContextPath()%>/emp/empList.jsp?&currentPage=<%=currentPage%>&sort=ASC&noSort=<%=noSort%>&word=<%=word%>"> [오름차순]</a>
+									<a href="<%=request.getContextPath()%>/emp/empList.jsp?&currentPage=<%=pageCount.getCurrentPage()%>&sort=ASC&noSort=<%=noSort%>&word=<%=word%>"> [오름차순]</a>
 							<%
 								}
 							%>
@@ -173,21 +160,21 @@
 				<div class="text-center">
 					<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=1&sort=<%=sort %>&noSort=<%=noSort%>&word=<%=word%>">처음</a>
 					<%
-						if(currentPage>1) {
+						if(currentPage > 1) {
 					%>
-							<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=currentPage-1%>&sort=<%=sort %>&noSort=<%=noSort%>&word=<%=word%>">이전</a>
+							<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=pageCount.getCurrentPage()-1%>&sort=<%=sort %>&noSort=<%=noSort%>&word=<%=word%>">이전</a>
 					<%
 						}
 					%>
-					<span style="text-align:center" class="text-center"><%=currentPage %> / <%=p.getLastPage()%></span>
+					<span style="text-align:center" class="text-center"><%=pageCount.getCurrentPage() %> / <%=pageCount.getLastPage() %></span>
 					<%
-						if(currentPage<paging.getLastPage()) {
+						if(currentPage < pageCount.getLastPage()) {
 					%>
-							<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=currentPage+1%>&sort=<%=sort %>&noSort=<%=noSort%>&word=<%=word%>">다음</a>
+							<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=pageCount.getCurrentPage()+1%>&sort=<%=sort %>&noSort=<%=noSort%>&word=<%=word%>">다음</a>
 					<%		
 						}
 					%>
-					<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=paging.getLastPage()%>&sort=<%=sort %>&noSort=<%=noSort%>&word=<%=word%>">끝</a>
+					<a class="btn btn-light" href="<%=request.getContextPath()%>/emp/empList.jsp?currentPage=<%=pageCount.getLastPage()%>&sort=<%=sort %>&noSort=<%=noSort%>&word=<%=word%>">끝</a>
 				</div>
 				
 				<div>
