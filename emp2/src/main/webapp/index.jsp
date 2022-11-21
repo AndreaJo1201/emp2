@@ -4,6 +4,7 @@
 <%@ page import="vo.*" %>
 <%@ page import="java.sql.*" %>
 <%@ page import="java.util.*" %>
+<%@ page import="util.*" %>
 
 <%
 	// session 유효성 검증 코드
@@ -22,14 +23,14 @@
 	Object objLoginEmp = session.getAttribute("loginEmp");
 	Employee loginEmp = (Employee)objLoginEmp;
 	
-	//2) Model	
-	String Driver = "org.mariadb.jdbc.Driver";
-	Class.forName(Driver);
+	//2) Model
+/*
+	DBUtil dbUtil = new DBUtil();
+	Connection conn = dbUtil.getConnection();
 	
-	String url = "jdbc:mariadb://localhost:3306/employees";
-	String user = "root";
-	String password = "java1234";
-	Connection conn = DriverManager.getConnection(url, user, password);
+	conn.close();
+*/
+	
 
 %>
 

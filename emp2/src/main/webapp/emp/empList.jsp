@@ -58,12 +58,20 @@
 	}
 	System.out.println("debug word : "+word);
 	
+	
+	/************************************************************************************************************************************************/
+	
+	
 	//2) Model
 	EmpDao empDao = new EmpDao();
 	
 	Page pageCount = empDao.countPageList(currentPage, ROW_PER_PAGE, word); // page Count
 	
 	ArrayList<Employee> list = empDao.selectEmpList(pageCount.getCurrentPage(), ROW_PER_PAGE, noSort, sort, word); // list select
+	
+	
+	/************************************************************************************************************************************************/
+	
 	
 	//3) view
 	if(pageCount.getStringMsg() != null) { // list model -> 잘못된 currentPage가 넘어왔을경우
