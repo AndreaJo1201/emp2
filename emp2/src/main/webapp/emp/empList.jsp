@@ -4,6 +4,7 @@
 <%@ page import="java.sql.*" %>
 <%@ page import = "vo.*" %>
 <%@ page import ="java.util.*" %>
+<%@ page import="dao.*" %>
 
 <%
 	//1) Controller

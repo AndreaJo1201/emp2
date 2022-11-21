@@ -4,7 +4,7 @@ public class DataBase {
 	private String url = "jdbc:mariadb://localhost:3306/employees";
 	private String user = "root";
 	private String password = "java1234";
-	private String driver = "org.mariadb.jdbc:Driver";
+	private String driver = "org.mariadb.jdbc.Driver";
 	
 	
 	public String getUrl() {
