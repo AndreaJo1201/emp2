@@ -3,6 +3,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%request.setCharacterEncoding("UTF-8"); %>
 <%@ page import="vo.*" %>
+<%@ page import="util.*" %>
 
 <%	
 	// 1) controller
@@ -35,19 +36,9 @@
 	
 	
 	//2) model
-	String driver = "org.mariadb.jdbc.Driver";
-	String url = "jdbc:mariadb://localhost:3306/employees";
-	String user = "root";
-	String password = "java1234";
+	DBUtil dbUtil = new DBUtil();
+	Connection conn = dbUtil.getConnection();
 	
-	Class.forName(driver);
-	Connection conn = DriverManager.getConnection(url, user, password);
-	/*
-		SELECT emp_no empNo, last_name lastName
-		FROM employee
-		WHERE emp_no = ? AND first_name = ? AND last_name = ?
-	
-	*/
 	String sql = "SELECT emp_no empNo, CONCAT(first_name,' ',last_name) name FROM employees WHERE emp_no = ? AND first_name = ? AND last_name = ?";
 	PreparedStatement stmt = conn.prepareStatement(sql);
 	stmt.setInt(1, employee.getEmpNo());

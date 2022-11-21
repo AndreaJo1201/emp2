@@ -1,26 +1,26 @@
-package vo;
+package dao;
 import java.sql.*;
 import java.util.*;
+
+import util.DBUtil;
+import vo.*;
 
 public class EmpDao {
 
 	public ArrayList<Employee> selectEmpList (int currentPage, final int ROW_PER_PAGE, String noSort, String sort, String word) throws Exception {
 		ArrayList<Employee> list = new ArrayList<Employee>();
-		
-		DataBase db = new DataBase();
-		String url = db.getUrl();
-		String user = db.getUser();
-		String password = db.getPassword();
+
 		
 		int beginRow = ROW_PER_PAGE * (currentPage-1);
 		
 		/**************************************************************************************/
 		
-		Class.forName("org.mariadb.jdbc.Driver");
-		Connection conn = DriverManager.getConnection(url, user, password);
+		DBUtil dbUtil = new DBUtil();
+		Connection conn = dbUtil.getConnection();
 		
 		/*****************************SET PAGE LIST********************************************/
 		DbSql dbSql = new DbSql();
+		
 		String sql = dbSql.sqlSelectList(noSort, sort, word);
 		PreparedStatement stmt = null;
 			
@@ -55,15 +55,10 @@ public class EmpDao {
 	public Page countPageList(int currentPage, final int ROW_PER_PAGE, String word) throws Exception {
 		Page page = new Page();
 		
-		DataBase db = new DataBase();
-		String url = db.getUrl();
-		String user = db.getUser();
-		String password = db.getPassword();
-		
 		/**************************************************************************************/
 		
-		Class.forName("org.mariadb.jdbc.Driver");
-		Connection conn = DriverManager.getConnection(url, user, password);
+		DBUtil dbUtil = new DBUtil();
+		Connection conn = dbUtil.getConnection();
 		
 		/*****************************COUNT PAGE LIST******************************************/
 		DbSql dbSql = new DbSql();
